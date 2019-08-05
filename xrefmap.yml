@@ -1,0 +1,21 @@
+### YamlMime:XRefMap
+sorted: true
+references:
+- uid: on_button
+  name: on_button
+  href: api/plugin-script/on_button.html
+- uid: org.apollo.game.plugin.action
+  name: org.apollo.game.plugin.action
+  href: plugin-api/spec/org.apollo.game.plugin.action.html
+  fullName: org.apollo.game.plugin.action
+  nameWithType: org.apollo.game.plugin.action
+- uid: org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction
+  name: ObjectAction<T>
+  href: plugin-api/spec/org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction.html
+  fullName: org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction<T>
+  nameWithType: ObjectAction<T>
+- uid: org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction.option
+  name: mob
+  href: plugin-api/spec/org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction.html#org_apollo_game_plugin_kotlin_message_action_obj_ObjectAction_option
+  fullName: org.apollo.game.plugin.kotlin.message.action.obj.ObjectAction<T>.option
+  nameWithType: ObjectAction<T>.option

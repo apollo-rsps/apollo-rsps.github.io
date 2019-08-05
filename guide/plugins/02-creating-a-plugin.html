@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Creating a plugin | Apollo Documentation </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Creating a plugin | Apollo Documentation ">
+    <meta name="generator" content="docfx 2.44.0.0">
+    
+    <link rel="shortcut icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../../styles/docfx.css">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <meta property="docfx:navrel" content="../../toc.html">
+    <meta property="docfx:tocrel" content="../toc.html">
+    
+    
+    
+  </head>  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="creating-a-plugin">Creating a plugin</h1>
+
+<p>Apollo's plugins are written in <a href="http://kotlinlang.org">Kotlin</a> and are
+primarily for content, not core code (if you aren't sure where your code
+should go, ask in irc). Note that this tutorial assumes some familiarity
+with Kotlin, although good Java knowledge will probably be enough.</p>
+<p>Note: This tutorial is for developing Plugins for the kotlin-experiments
+branch prior to the release of the Kotlin plugin system for Apollo.</p>
+<h2 id="create-a-working-environment">Create a working environment</h2>
+<h2 id="create-the-plugin-metadata">Create the plugin metadata</h2>
+<p>Apollo's plugins are stored in <em>/game/plugin</em>, and each plugin has its
+own directory. Create one for your plugin - something like 'myplugin'.</p>
+<p>Inside that, create a directory called 'src', then right click it and
+'Mark Directory as &gt; Sources Root'. It should turn blue. +
+Inside your plugin's directory (<em>not</em> in src) you'll want a
+<em>build.gradle</em> file, containing something like:</p>
+<pre><code class="lang-groovy">plugin {
+    name = &quot;myplugin&quot;
+    authors = [ &quot;your name&quot; ]
+}
+</code></pre>
+<p>Sometimes you need to use code from another plugin, which can be done
+like so: <code>dependencies = [ &quot;util:lookup&quot; ]</code></p>
+<p>This imports the <code>lookup</code> plugin from <code>util</code>.</p>
+<h2 id="write-the-plugin">Write the plugin</h2>
+<p>Plugins are written in kotlin script (<em>.kts</em>), which is then transpiled
+into Java (bytecode) at compile time. Kotlin script is designed to be
+executed like a scripting language: you do <em>not</em> need a main function (a
+kotlin script consisting of nothing more than <code>println(&quot;Hello, world!&quot;)</code>
+will indeed compile and print &quot;Hello, world!&quot;).</p>
+<p>Apollo uses the <em>.plugin.kts</em> extension to mark files as plugin scripts.</p>
+<p>Add a file named 'myplugin.plugin.kts' inside <code>src</code> and add the
+following code:</p>
+<pre><code class="lang-kotlin">import org.apollo.game.action.Action
+import org.apollo.game.message.impl.InventoryItemMessage
+import org.apollo.game.model.Item
+import org.apollo.game.model.entity.Entity
+import org.apollo.game.model.entity.EntityType
+import org.apollo.game.model.entity.GroundItem
+import org.apollo.game.model.entity.Player
+
+class DropItemAction(val player: Player, val slot: Int): Action&lt;Player&gt;(delay = 0, immediate = true, player) {
+
+    override fun execute() {
+        val region = player.world.regionRepository.fromPosition(player.position)
+
+        if (region.getEntities&lt;Entity&gt;(player.position, EntityType.DYNAMIC_OBJECT, EntityType.STATIC_OBJECT).isEmpty()) {
+            val amount = player.inventory.reset(slot)?.amount
+            if (amount == null) {
+                return
+            }
+
+            val item = GroundItem.create(player.world, player.position, Item(item, amount), player)
+            player.world.spawn(item)
+        } else {
+            player.sendMessage(&quot;You cannot drop this here.&quot;)
+        }
+
+        stop()
+    }
+
+}
+
+val DROP_OPTION_ID = 5
+val INVENTORY_INTERFACE_ID = 3214
+
+on { InventoryItemMessage::class }
+    .where { option == DROP_OPTION_ID &amp;&amp; interfaceId == INVENTORY_INTERFACE_ID }
+    .then { player -&gt;
+        player.startAction(DropItemAction(player, slot))
+        terminate()
+    }
+</code></pre>
+<p>Here we have an <em>action</em>, and a <em>listener</em>, the two core features of
+plugins.</p>
+<p>The <code>on {...}</code> lambda at the end is the listener, and listens for
+specific event types (typically a <em>Message</em> subclass) Here we are
+listening to <code>InventoryItemMessage</code>s, which are called whenever a player
+performs an action on an item in an inventory. +
+The <code>where</code> clause is used to filter out requests that don't match what
+we're looking for: here, we only care about messages where the player
+selected the fifth option (used for dropping), and when they selected
+that option on an item in the inventory (i.e. the interfaceId matches
+the inventory interface id). <code>where</code> is executed from the context of the
+intercepted message, so <code>option</code> and <code>interfaceId</code> are actually fields
+inside <code>InventoryItemMessage</code>. +
+The 'then' clause is executed if the <code>where</code> lambda evaluates to <code>true</code>.</p>
+<p><em>Actions</em> are used to schedule player (or NPC)-related code to be
+executed in the future (and optionally, periodically). Plugins also have
+actions that can be used to suspend/asynchronously execute code. Here
+we're creating an <code>Action</code> that removes an item from the player's
+inventory and spawns a <code>GroundItem</code>. Because <code>Action</code>s are scheduled,
+<code>execute()</code> will be called every server pulse (tick), until the <code>stop()</code>
+function is called.</p>
+<p>Now you can build it by running <code>gradle build</code> in the command line, or
+in IntelliJ via 'View &gt; Tool Windows &gt; Gradle &gt; Execute Gradle Task'
+(type 'build' for the command).</p>
+<p>Voila!</p>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/apollo-rsps/apollo/blob/kotlin-experiments/docs/guide/plugins/02-creating-a-plugin.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>

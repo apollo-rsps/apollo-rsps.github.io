@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Requirements | Apollo Documentation </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Requirements | Apollo Documentation ">
+    <meta name="generator" content="docfx 2.44.0.0">
+    
+    <link rel="shortcut icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../../styles/docfx.css">
+    <link rel="stylesheet" href="../../styles/main.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <meta property="docfx:navrel" content="../../toc.html">
+    <meta property="docfx:tocrel" content="../toc.html">
+    
+    
+    
+  </head>  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div id="sidetoc"></div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+
+<p>This is a short guide to getting a copy of Apollo from our VCS and
+running a server able to accept connections from a game client. It
+assumes you’re starting fresh and have no local copy of Apollo.</p>
+<h1 id="requirements">Requirements</h1>
+<p>You should be familiar with running programs on the UNIX shell or
+Windows command prompt. There is also a short list of prerequisites
+below needed to complete this guide.</p>
+<ul>
+<li>Git</li>
+<li>Gradle</li>
+<li>Java 8</li>
+<li>RuneScape r377 game data files [1]</li>
+</ul>
+<h1 id="getting-apollo">Getting Apollo</h1>
+<blockquote>
+<p><strong>Note</strong></p>
+<p>Apollo is still in a development phase and has no current stable
+release, so to run the server we need to build it from sources first.</p>
+</blockquote>
+<p>The URL for the Apollo git repository is
+<a href="https://github.com/apollo-rsps/apollo.git">https://github.com/apollo-rsps/apollo.git</a>. You can clone this using
+the <code>git</code> command-line client or by using the <a href="https://help.github.com/desktop/guides/contributing-to-projects/cloning-a-repository-from-github-desktop/">GitHub desktop
+client</a>.</p>
+<pre><code>&gt; $ git clone &lt;https://github.com/apollo-rsps/apollo.git&gt;
+</code></pre>
+<p>If using the command line client, the repository will now be under a
+folder named <em>apollo</em> and is ready to build. When complete open a shell
+or Windows command prompt in that directory and move to the next step.</p>
+<h1 id="building-apollo">Building Apollo</h1>
+<p>Apollo uses Gradle build scripts as it’s build system. To build it,
+create a command prompt or shell in the Apollo repository folder and
+run:</p>
+<pre><code>&gt; $ ./gradlew assemble genRsa
+</code></pre>
+<p>This will build the core server with the content plugins and run their
+respective tests. This process takes around a minute to complete and
+when done will generate and output a set of RSA key parameters used by
+connecting clients to encrypt their credentials. Save these for later.</p>
+<h1 id="starting-apollo">Starting Apollo</h1>
+<p>The last dependency is putting the game data in a location where the
+server can find it. By default Apollo looks under <code>data/fs</code> in the root
+directory for a folder matching the release number. Apollo supports
+release 377, so in our case we want the directory structure to look like
+this:</p>
+<pre><code>data/fs
+└── 377
+    ├── jingle1.mid
+    ├── main_file_cache.dat
+    ├── main_file_cache.idx0
+    ├── main_file_cache.idx1
+    ├── main_file_cache.idx2
+    ├── main_file_cache.idxN
+</code></pre>
+<p>Now that everything is in place we can use the Gradle task to boot the
+server.</p>
+<pre><code>&gt; $ gradle server:run
+</code></pre>
+<p>After booting Apollo will have loaded the game data and be ready to accept connections.</p>
+<p>[1] We are unable to provide user-end assets like the game data or
+client due to copyright restrictions.</p>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/apollo-rsps/apollo/blob/kotlin-experiments/docs/guide/getting-started/02-running-apollo.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../../styles/docfx.js"></script>
+    <script type="text/javascript" src="../../styles/main.js"></script>
+  </body>
+</html>
